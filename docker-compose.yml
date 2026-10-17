@@ -1,0 +1,23 @@
+services:
+  gateway:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      # Ollama running on the host Mac (`ollama serve`).
+      GATEWAY_UPSTREAM_BASE_URL: http://host.docker.internal:11434/v1
+      GATEWAY_REDIS_URL: redis://redis:6379/0
+      GATEWAY_DATABASE_URL: postgresql://gateway:gateway@postgres:5432/gateway
+    depends_on: [redis, postgres]
+
+  # Redis and Postgres are not used yet; milestone 2 adds rate limits, quotas and usage metering.
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: gateway
+      POSTGRES_PASSWORD: gateway
+      POSTGRES_DB: gateway
+    ports: ["5432:5432"]
